@@ -61,7 +61,6 @@ def to_png(in_path, page):
 
             os.unlink(out_path)
 
-        workdir.cleanup()
         return oim
 
 
@@ -73,7 +72,6 @@ def to_txt(in_path):
         export.export(in_path, None, [ out_path ])
 
         directory = open(out_path).read()
-        workdir.cleanup()
         return directory
 
 
