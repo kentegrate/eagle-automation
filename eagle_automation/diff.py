@@ -34,7 +34,7 @@ from eagle_automation.config import config
 from eagle_automation.export import get_extension, BadExtension, EaglePNGExport, EagleDirectoryExport
 
 def to_png(in_path, page):
-	with tempfile.TemporaryDirectory() as workdir:
+    with tempfile.TemporaryDirectory() as workdir:
         extension = in_path.split('.')[-1].lower()
         if extension == 'brd':
             layers = config.LAYERS.values()
@@ -61,21 +61,19 @@ def to_png(in_path, page):
 
             os.unlink(out_path)
 
-		workdir.cleanup()
-
+        workdir.cleanup()
         return oim
 
+
 def to_txt(in_path):
-	with tempfile.TemporaryDirectory() as workdir:
+    with tempfile.TemporaryDirectory() as workdir:
         out_path = os.path.join(workdir, "out.txt")
 
         export = EagleDirectoryExport()
         export.export(in_path, None, [ out_path ])
 
         directory = open(out_path).read()
-
-		workdir.cleanup()
-
+        workdir.cleanup()
         return directory
 
 
