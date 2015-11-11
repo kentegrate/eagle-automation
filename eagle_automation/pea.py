@@ -14,6 +14,7 @@ The commands are the following:
     export  Export data out of the brd/sch/lbr for manufacturing
     drill   Export drill data for manufacturing
     diff    Do a diff
+    db      Manage parts alternative database
 
 See '{base} help <command>' for more information on a specific command.
 

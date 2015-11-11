@@ -8,6 +8,8 @@ Usage:
     {base} {command} ls [--category=<category>]
     {base} {command} show <component>
     {base} {command} insert <component> --category=<category> --description=<description>
+    {base} {command} rm <component>
+    {base} {command} update <component> --category=<category> --description=<description>
     {base} {command} alt <component> list
     {base} {command} alt <component> append <item> --status=<status> --category=<category> --manufacturer=<manufacturer> --reference=<reference> --description=<description>
     {base} {command} alt <component> modify <item> [--status=<status>] [--category=<category>] [--manufacturer=<manufacturer>] [--reference=<reference>] [--description=<description>]
@@ -268,6 +270,26 @@ class ComponentList(ComponentDatabase):
                 self.print_parts_list(parts)
 
 
+@Commands.register('update')
+class ComponentModify(ComponentDatabase):
+    def run(self, args):
+        if args['<component>'] in self.db.keys():
+            if args['--category']:
+                self.db[args['<component>']].update({'Category': args['--category']})
+            if args['--description']:
+                self.db[args['<component>']].update({'Description': args['--description']})
+
+
+@Commands.register('rm')
+class ComponentRemove(ComponentDatabase):
+    def run(self, args):
+        # TODO ask for confirmation
+        if args['<component>'] in self.db.keys():
+            del self.db[args['<component>']]
+            self.db.save()
+            print("Successfully removed {} from database".format(args['<component>']))
+
+
 @Commands.register('insert')
 class ComponentInsert(ComponentDatabase):
     """
@@ -306,27 +328,68 @@ class ComponentAlternative(ComponentDatabase):
         ComponentShow.list(component)
 
     def delete(self, component, item):
+        if item is 1:
+            self.db[component]['Preferred'] = self.db[component]['Alternatives']
+        else:
+            self.db[component]['Alternatives'].remove(item-2)
+        self.db.save()
         print('Removed #{} from {} alternatives. Alternatives list updated:'.format(item, component))
         self.list(component)
-        # TODO
 
     def preferred(self, component, item):
-        print('Preferred changed to #{} of {}\'s alternatives. Alternatives list updated:'.format(item, component))
+        if item is 1:
+            log.info('Item #1 is already preferred. Nothing\'s done.')
+            return
+        preferred = self.db[component]['Alternatives'][item-2]
+        self.db[component]['Alternatives'].append(self.db[component]['Preferred'])
+        self.db[component]['Preferred'] = preferred
+        self.db.save()
+        print('Preferred successfully changed to #{} of {}\'s alternatives. Alternatives list updated:'.format(item, component))
         self.list(component)
-        # TODO
 
     def move(self, component, item, position):
-        print('Alternative #{} move to position #{} of {}. Alternatives list updated:'.format(item, position, component))
+        if item == position:
+            log.info('Both items are at same position. Nothing\'s done.')
+            return
+        if item == 1:
+            a = self.db[component]['Preferred']
+        else:
+            a = self.db[component]['Alternatives'][item-2]
+        if position == 1:
+            b = self.db[component]['Preferred']
+            self.db[component]['Prefered'] = a
+        else:
+            b = self.db[component]['Alternatives'][position-2]
+            self.db[component]['Alternatives'][position-2] = a
+        if item == 1:
+            self.db[component]['Preferred'] = b
+        else:
+            self.db[component]['Alternatives'][item-2] = b
+        self.db.save()
+        print('Alternative #{} successfully moved to position #{} of {}. Alternatives list updated:'.format(item, position, component))
         self.list(component)
-        # TODO
 
     def modify(self, component, item):
-        print('Modified alternative #{} of {}. Alternatives list updated:'.format(item, component))
-        self.list(component)
-        # TODO
+        changed = False
+        for key, val in item:
+            if val:
+                self.db[component][key] = val
+                changed = True
+        self.db.save()
+        if changed:
+            print('Successfully modified alternative #{} of {}. Alternatives list updated:'.format(item, component))
+            self.list(component)
+        else:
+            log.info('No paramaters given, no changes done.')
 
     def run(self, args):
         if args['append']:
+            self.insert(args['<component>'], {
+                'Reference': args['--reference'],
+                'Manufacturer': args['--manufacturer'],
+                'Status': args['--status']
+            })
+        if args['modify']:
             self.insert(args['<component>'], {
                 'Reference': args['--reference'],
                 'Manufacturer': args['--manufacturer'],
