@@ -5,23 +5,24 @@ log = logging.getLogger('pea').getChild(__name__)
 
 from yaml import load, dump
 try:
-	from yaml import CLoader as Loader, CDumper as Dumper
+    from yaml import CLoader as Loader, CDumper as Dumper
 except ImportError:
-	from yaml import Loader, Dumper
+    from yaml import Loader, Dumper
 
 from eagle_automation.default import Config
+from eagle_automation.exceptions import FileNotFoundError
 
 DEFAULT_CONFIG_PATHS = [
-	'/etc/eagle_automation.conf',
-	os.path.join(os.environ.get('HOME', '/'), '.config/eagle_automation.conf'),
-	os.path.join(os.environ.get('HOME', '/'), '.eagle_automation.conf'),
-	'eagle_automation.conf',
-	'.eagle_automation.conf',
+    os.path.join('/', 'etc', 'eagle_automation.conf'),
+    os.path.join(os.environ.get('HOME', '/'), '.config/eagle_automation.conf'),
+    os.path.join(os.environ.get('HOME', '/'), '.eagle_automation.conf'),
+    os.path.join(os.getcwd(), 'eagle_automation.conf'),
+    os.path.join(os.getcwd(), '.eagle_automation.conf'),
 ]
 
 
 def __set_value(self, key, val):
-	self.__dict__.update({key: val})
+    self.__dict__.update({key: val})
 
 def __merge_dict(a, b, path=None):
     "merges b into a"
@@ -39,12 +40,12 @@ def __merge_dict(a, b, path=None):
     return a
 
 def __read_config(self, path):
-	if os.path.exists(path):
-		with open(path, 'r') as f:
-			data = load(f, Loader=Loader)
-			__merge_dict(self.__dict__, data)
-	else:
-		raise FileNotFoundError()
+    if os.path.exists(path):
+        with open(path, 'r') as f:
+            data = load(f, Loader=Loader)
+            __merge_dict(self.__dict__, data)
+    else:
+        raise FileNotFoundError()
 
 Config.update = __read_config
 Config.insert = __set_value
@@ -52,11 +53,11 @@ Config.insert = __set_value
 config = Config()
 
 def init():
-	for path in DEFAULT_CONFIG_PATHS:
-		try:
-			config.update(path)
-			log.debug("Loaded configuration: {}".format(path))
-		except:
-			log.debug("Configuration file '{}' not found".format(path))
+    for path in DEFAULT_CONFIG_PATHS:
+        try:
+            config.update(path)
+            log.debug("Loaded configuration: {}".format(path))
+        except FileNotFoundError:
+            log.debug("Configuration file '{}' not found".format(path))
 
 __all__ = ['config', 'init']
