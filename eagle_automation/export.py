@@ -418,8 +418,9 @@ class EagleCAMExport:
             options = ["-X", "-d" + self.DEVICE, "-o" + out_path]
             if layer.get('mirror'):
                 options.append("-m")
-                cmd = [config.EAGLE] + options + [in_path] + layer['layers']
-                subprocess.call(cmd)
+            cmd = [config.EAGLE] + options + [in_path] + layer['layers']
+            log.debug("Calling {}".format(cmd))
+            subprocess.call(cmd)
 
 
 @Commands.register('gerber')
