@@ -24,6 +24,7 @@ import docopt
 import difflib
 import tempfile
 import subprocess
+import pyeagle
 
 import logging
 
@@ -189,6 +190,72 @@ def diff_text(from_file, to_file):
     print('\n'.join(list(diff)))
 
 
+def diff_packages(libf, libt):
+    """
+    Print the differences in _packages_ between two libraries
+    :param libf: pyeagle open'd lib
+    :param libt: pyeagle open'd lib
+    :return: nothing, this prints directly
+    """
+    packs_f = set(libf.packages)
+    packs_t = set(libt.packages)
+    missing_new = packs_f.difference(packs_t)
+    missing_old = packs_t.difference(packs_f)
+    if missing_new:
+        print("Packages in old %s not in new %s:" % (libf.from_file, libt.from_file))
+        [print(x) for x in missing_new]
+    if missing_old:
+        print("Packages missing from old %s that were in new %s:" % (libf.from_file, libt.from_file))
+        [print(x) for x in missing_old]
+    # Now, for all x that _are_ in both, need to compare them!
+    for p in packs_f.intersection(packs_t):
+        # diff pads and primitives here.
+        real_f = libf.packages[p]
+        real_t = libt.packages[p]
+        if len(real_f.pads) != len(real_t.pads):
+            print("Different pad count for part: %s" % p)
+            # TODO - print the different ones one day?
+            continue
+        # More likely, the pads themselves changed...
+        # make new sets keyed on the pad names, then compare them on that.
+        # oops, python 3 alert! dict comprehensions!
+        pads_f = {x.name:x for x in real_f.pads}
+        pads_t = {x.name:x for x in real_t.pads}
+        for key, a in pads_f.items():
+            b = pads_t[key]
+            if (repr(a) != repr(b)):
+                print("Package: %s Pads differ: %s != %s" % (p, a, b))
+        # FIXME! - no comparison of other primitives!
+
+
+
+
+
+def diff_devices(libf, libt):
+    devs_f = set(libf.device_sets)
+    devs_t = set(libt.device_sets)
+    # TODO - unconvinced this is complete :|
+    missing_new = devs_f.difference(devs_t)
+    missing_old = devs_t.difference(devs_f)
+    if missing_new:
+        print("Devices in old %s not in new %s:" % (libf.from_file, libt.from_file))
+        [print(x) for x in missing_new]
+    if missing_old:
+        print("Devices missing from old %s that were in new %s:" % (libf.from_file, libt.from_file))
+        [print(x) for x in missing_old]
+    # Now, for all x that _are_ in both, need to compare them!
+
+
+
+def diff_semantic(from_file, to_file):
+    # make a list of packages first, and immediately output for/against
+    libf = pyeagle.open(from_file)
+    libt = pyeagle.open(to_file)
+    diff_packages(libf, libt)
+    diff_devices(libf, libt)
+
+
+
 def diff(from_file, to_file, page=0, output=None):
     extension = get_extension(from_file)
 
@@ -201,7 +268,10 @@ def diff(from_file, to_file, page=0, output=None):
     elif extension == 'sch':
         diff_visual(from_file, to_file, page, output)
     elif extension == 'lbr':
-        diff_text(from_file, to_file)
+        if page == 0:
+            diff_text(from_file, to_file)
+        else:
+            diff_semantic(from_file, to_file)
     else:
         log.error("%s: skipping, not a board or schematic" % (from_file,))
         return
