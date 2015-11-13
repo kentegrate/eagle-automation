@@ -229,9 +229,6 @@ def diff_packages(libf, libt):
         # FIXME! - no comparison of other primitives!
 
 
-
-
-
 def diff_devices(libf, libt):
     devs_f = set(libf.device_sets)
     devs_t = set(libt.device_sets)
@@ -245,7 +242,6 @@ def diff_devices(libf, libt):
         print("Devices missing from old %s that were in new %s:" % (libf.from_file, libt.from_file))
         [print(x) for x in missing_old]
     # Now, for all x that _are_ in both, need to compare them!
-
 
 
 def diff_semantic(from_file, to_file):
