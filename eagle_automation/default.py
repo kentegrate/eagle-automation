@@ -117,3 +117,6 @@ class Config:
 # Default component attribute for component db
     PARTNUM = '#PARTNUM'
 
+# Do a semantic diff
+    SEMANTIC_DIFF = False
+

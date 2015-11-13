@@ -2,7 +2,7 @@
 
 """pea diff: compare CadSoft Eagle files
 
-USAGE: {prog} {command} [--page=N] [--output=F] <from-file> <to-file>
+USAGE: {prog} {command} [--page=N] [--output=F] [--semantic] <from-file> <to-file>
 
 Parameters:
 	<from-file>	 File to diff from
@@ -11,6 +11,7 @@ Parameters:
 Options:
 	-p,--page=N	   Page to compare on multi-page schematics [default: 1]
 	-o,--output=F  File to output diff into
+	-s,--semantic  Do a semantic diff (for library diffs)
 
 Copyright (C) 2015  Bernard Pratz <guyzmo+github@m0g.net>
 Copyright (C) 2014  Tomaz Solc <tomaz.solc@tablix.org>
@@ -255,8 +256,7 @@ def diff_semantic(from_file, to_file):
     diff_devices(libf, libt)
 
 
-
-def diff(from_file, to_file, page=0, output=None):
+def diff(from_file, to_file, page=0, output=None, semantic=False):
     extension = get_extension(from_file)
 
     if get_extension(to_file) != extension:
@@ -268,7 +268,7 @@ def diff(from_file, to_file, page=0, output=None):
     elif extension == 'sch':
         diff_visual(from_file, to_file, page, output)
     elif extension == 'lbr':
-        if page == 0:
+        if semantic or config.SEMANTIC_DIFF:
             diff_text(from_file, to_file)
         else:
             diff_semantic(from_file, to_file)
@@ -283,7 +283,7 @@ def diff_main(verbose=False):
     args = docopt.docopt(__doc__.format(prog=sys.argv[0], command=sys.argv[1]))
     log.debug("Arguments:\n{}".format(repr(args)))
 
-    diff(args['<from-file>'], args['<to-file>'], int(args['--page'] if args['--page'] else 0), args['--output'])
+    diff(args['<from-file>'], args['<to-file>'], int(args['--page'] if args['--page'] else 0), args['--output'], args['--semantic'])
 
 
 if __name__ == '__main__':
