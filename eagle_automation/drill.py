@@ -7,7 +7,7 @@ import logging
 log = logging.getLogger('pea').getChild(__name__)
 
 
-def drill():
+def drill_main(verbose=False):
     lines = 0
 
     for line in sys.stdin:
