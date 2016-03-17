@@ -5,6 +5,9 @@ from setuptools import setup
 
 import sys
 
+if sys.version_info.major != 3:
+    raise Exception("Sorry this package only works with python3.")
+
 opts = dict()
 if sys.platform == 'win32':
 	import py2exe
