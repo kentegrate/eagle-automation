@@ -110,8 +110,8 @@ def diff_visual(from_file, to_file, page=0, output=None):
 
         if not page:
             try:
-                with open(from_file) as _from:
-                    with open(to_file) as _to:
+                with open(from_file, encoding="utf-8") as _from:
+                    with open(to_file, encoding="utf-8") as _to:
                         _from = _from.read()
                         _to = _to.read()
                         # TODO use pyeagle!
