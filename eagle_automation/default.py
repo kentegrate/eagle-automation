@@ -17,7 +17,7 @@ elif sys.platform.startswith('linux'):
     eagle_bin = glob_or_none('/usr/local/eagle*/bin/eagle')
     open_bin = '/usr/bin/xdg-open'
 elif 'win32' == sys.platform:
-    eagle_bin = 'c:/program files/EAGLE*/eagle.exe'
+    eagle_bin = 'C:\EAGLE*\eagle.exe'
     open_bin = 'start'
 else:
     eagle_bin = None
