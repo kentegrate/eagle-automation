@@ -18,7 +18,7 @@ elif sys.platform.startswith('linux'):
     open_bin = '/usr/bin/xdg-open'
 elif 'win32' == sys.platform:
     eagle_bin = 'C:\EAGLE 9.6.2\eagle.exe'
-    open_bin = 'start'
+    open_bin = 'C:\Program Files\Google\Chrome\Application\chrome.exe'
 else:
     eagle_bin = None
     open_bin = None
